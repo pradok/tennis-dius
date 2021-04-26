@@ -58,4 +58,22 @@ describe('Match', (): void => {
       expect(match.score()).toEqual('1-0');
     });
   });
+
+  describe(`${player1}`, (): void => {
+    beforeEach((): void => {
+      for (let game = 0; game < 10; game++) {
+        for (let point = 0; point < 4; point++) {
+          match.pointWonBy(player1);
+        }
+        for (let point = 0; point < 4; point++) {
+          if (game < 4) {
+            match.pointWonBy(player2);
+          }
+        }
+      }
+    });
+    it('wins set by 6-4', (): void => {
+      expect(match.score()).toEqual('6-4');
+    });
+  });
 });
