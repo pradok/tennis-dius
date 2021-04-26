@@ -1,8 +1,15 @@
+import {
+  GAMES_SET_THRESHOLD,
+  GAMES_SET_TIE_THRESHOLD,
+  POINTS_ADVANTAGE_THRESHOLD,
+  POINTS_WIN_THRESHOLD,
+  TIEBREAK_DIFF,
+  TIEBREAK_THRESHOLD,
+} from './consts';
 import Player from './Player';
 import Score from './Score';
 
 export default class Match {
-  private gameFormat: string[] = ['0', '15', '30', '40', 'Advantage'];
   private _players: Player[] = [];
   private _score: Score;
   private _tiebreak: boolean = false;
@@ -15,36 +22,36 @@ export default class Match {
 
   public pointWonBy(name: string): void {
     const playerIndex = this.findPlayerIndex(name);
-    const winner = this._players[playerIndex];
-    const loser = this._players[1 - playerIndex];
+    const pointWinner = this._players[playerIndex];
+    const pointLoser = this._players[1 - playerIndex];
 
-    if (this._determineSetWinner(winner, loser)) {
+    if (this._determineSetWinner(pointWinner, pointLoser)) {
       return;
     }
 
-    if (this._determineTieBreak(winner, loser)) {
+    if (this._determineTieBreak(pointWinner, pointLoser)) {
       this._tiebreak = true;
-      winner.winPoint();
+      pointWinner.winPoint();
       // Determine Tie break winner.
-      if (winner.points >= 7 && winner.points - loser.points >= 2) {
-        winner.winGame();
-        loser.resetPoints();
+      if (pointWinner.points >= TIEBREAK_THRESHOLD && pointWinner.points - pointLoser.points >= TIEBREAK_DIFF) {
+        pointWinner.winGame();
+        pointLoser.resetPoints();
         this._tiebreak = false;
         return;
       }
     } else {
-      if (this._determineGameWinner(winner, loser)) {
+      if (this._determineGameWinner(pointWinner, pointLoser)) {
         return;
       }
-      // If loser was on 4 (Advantage), loses a point to go back to 3
-      if (loser.points === 4) {
-        loser.losePoint();
+      // If pointLoser was on 4 (Advantage), loses a point to go back to 3
+      if (pointLoser.points === POINTS_ADVANTAGE_THRESHOLD) {
+        pointLoser.losePoint();
         // Go back to Deuce, winner doesn't get any point.
-        if (winner.points === 3) {
+        if (pointWinner.points === POINTS_ADVANTAGE_THRESHOLD - 1) {
           return;
         }
       }
-      winner.winPoint();
+      pointWinner.winPoint();
     }
   }
 
@@ -65,37 +72,46 @@ export default class Match {
     return `${gamesScore}, ${pointsScore}`;
   }
 
-  private _determineSetWinner(winner: Player, loser: Player): boolean {
-    if ((winner.gamesWon === 6 && loser.gamesWon < 5) || (loser.gamesWon === 6 && winner.gamesWon < 5)) {
+  private _determineSetWinner(pointWinner: Player, pointLoser: Player): boolean {
+    if (
+      (pointWinner.gamesWon === GAMES_SET_THRESHOLD && pointLoser.gamesWon < GAMES_SET_THRESHOLD - 1) ||
+      (pointLoser.gamesWon === GAMES_SET_THRESHOLD && pointWinner.gamesWon < GAMES_SET_THRESHOLD - 1)
+    ) {
       return true;
     }
-    if ((winner.gamesWon === 7 && loser.gamesWon < 6) || (loser.gamesWon === 7 && winner.gamesWon < 6)) {
+    if (
+      (pointWinner.gamesWon === GAMES_SET_TIE_THRESHOLD && pointLoser.gamesWon < GAMES_SET_TIE_THRESHOLD - 1) ||
+      (pointLoser.gamesWon === GAMES_SET_TIE_THRESHOLD && pointWinner.gamesWon < GAMES_SET_TIE_THRESHOLD - 1)
+    ) {
       return true;
     }
-    if ((winner.gamesWon === 7 && loser.gamesWon === 6) || (loser.gamesWon === 7 && winner.gamesWon === 6)) {
+    if (
+      (pointWinner.gamesWon === GAMES_SET_TIE_THRESHOLD && pointLoser.gamesWon === GAMES_SET_TIE_THRESHOLD - 1) ||
+      (pointLoser.gamesWon === GAMES_SET_TIE_THRESHOLD && pointWinner.gamesWon === GAMES_SET_TIE_THRESHOLD - 1)
+    ) {
       return true;
     }
     return false;
   }
 
-  private _determineTieBreak(winner: Player, loser: Player): boolean {
-    if (winner.gamesWon === 6 && loser.gamesWon === 6) {
+  private _determineTieBreak(pointWinner: Player, pointLoser: Player): boolean {
+    if (pointWinner.gamesWon === GAMES_SET_THRESHOLD && pointLoser.gamesWon === GAMES_SET_THRESHOLD) {
       return true;
     }
     return false;
   }
 
-  private _determineGameWinner(winner: Player, loser: Player): boolean {
-    // If winner was already on 40 and loser is less than 40
-    if (winner.points === 3 && loser.points < 3) {
-      winner.winGame();
-      loser.resetPoints();
+  private _determineGameWinner(pointWinner: Player, pointLoser: Player): boolean {
+    // If winner was already on 40 and pointLoser is less than 40
+    if (pointWinner.points === POINTS_WIN_THRESHOLD && pointLoser.points < POINTS_WIN_THRESHOLD) {
+      pointWinner.winGame();
+      pointLoser.resetPoints();
       return true;
     }
     // Determine winner if was already on 4 (Advantage)
-    if (winner.points === 4 && loser.points < 4) {
-      winner.winGame();
-      loser.resetPoints();
+    if (pointWinner.points === POINTS_ADVANTAGE_THRESHOLD && pointLoser.points < POINTS_ADVANTAGE_THRESHOLD) {
+      pointWinner.winGame();
+      pointLoser.resetPoints();
       return true;
     }
 
