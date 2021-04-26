@@ -23,10 +23,10 @@ export default class Score {
       return '';
     }
     if (this._player1.points === 4) {
-      return `Advantage ${this._player1.name}`;
+      return `${this._gameFormatted[4]} ${this._player1.name}`;
     }
     if (this._player2.points === 4) {
-      return `Advantage ${this._player2.name}`;
+      return `${this._gameFormatted[4]} ${this._player2.name}`;
     }
 
     return score;

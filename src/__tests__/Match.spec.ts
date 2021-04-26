@@ -61,7 +61,7 @@ describe('Match', (): void => {
 
   describe(`${player1}`, (): void => {
     beforeEach((): void => {
-      for (let game = 0; game < 10; game++) {
+      for (let game = 0; game < 6; game++) {
         for (let point = 0; point < 4; point++) {
           match.pointWonBy(player1);
         }
@@ -74,6 +74,60 @@ describe('Match', (): void => {
     });
     it('wins set by 6-4', (): void => {
       expect(match.score()).toEqual('6-4');
+    });
+  });
+
+  describe(`${player2}`, (): void => {
+    beforeEach((): void => {
+      for (let game = 0; game < 8; game++) {
+        for (let point = 0; point < 4; point++) {
+          if (game < 5) {
+            match.pointWonBy(player1);
+          }
+        }
+        for (let point = 0; point < 4; point++) {
+          match.pointWonBy(player2);
+        }
+      }
+    });
+    it('wins set by 5-7', (): void => {
+      expect(match.score()).toEqual('5-7');
+    });
+  });
+
+  describe(`Tie Break`, (): void => {
+    beforeEach((): void => {
+      for (let game = 0; game < 6; game++) {
+        for (let point = 0; point < 4; point++) {
+          match.pointWonBy(player1);
+        }
+        for (let point = 0; point < 4; point++) {
+          match.pointWonBy(player2);
+        }
+      }
+      expect(match.score()).toEqual('6-6');
+    });
+    it(`should set the score correctly and ${player1} should win the tie break`, (): void => {
+      for (let point = 0; point < 7; point++) {
+        match.pointWonBy(player1);
+      }
+      expect(match.score()).toEqual('7-6');
+    });
+    it(`should be even with no winner till both reach 6 points or above`, (): void => {
+      for (let point = 0; point < 8; point++) {
+        match.pointWonBy(player1);
+        match.pointWonBy(player2);
+      }
+      expect(match.score()).toEqual('6-6, 8-8');
+    });
+    it(`${player2} should win the tie break with difference of two points`, (): void => {
+      for (let point = 0; point < 6; point++) {
+        match.pointWonBy(player1);
+        match.pointWonBy(player2);
+      }
+      match.pointWonBy(player2);
+      match.pointWonBy(player2);
+      expect(match.score()).toEqual('6-7');
     });
   });
 });
